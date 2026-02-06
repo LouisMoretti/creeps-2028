@@ -37,6 +37,8 @@ public class Program {
     static String noop;
     static String buildSmeltery;
     static String refineCopper;
+    static String buildSawmill;
+    static String refineWoodPlank;
 
     private static String getCmd(String citizenId, String cmd) {
         return serverUri + "command/" + login + "/" + citizenId + "/" + cmd;
@@ -296,6 +298,8 @@ public class Program {
             unload = getCmd(initResponse.citizen1Id, "unload");
             noop = getCmd(initResponse.citizen1Id, "noop");
             refineCopper = getCmd(initResponse.citizen1Id, "refine:copper");
+            buildSawmill = getCmd(initResponse.citizen1Id, "build:sawmill");
+            refineWoodPlank = getCmd(initResponse.citizen1Id, "build:wood-plank");
         }
 
         // ===== OBSERVE NEAR TOWN HALL =====
@@ -315,10 +319,9 @@ public class Program {
 
         Point currentPos = initResponse.householdCoordinates;
 
+        currentPos = farmXResources(currentPos, Tile.Rock, 50, false);
         currentPos = goToSafePlace(currentPos, false);
 
-        currentPos = farmXResources(currentPos, Tile.Rock, 50, false);
-//        currentPos = farmXResources(currentPos, Tile.Wood, 50, false);
         currentPos = goToTarget(currentPos, initResponse.townHallCoordinates.plus(1, 0), false);
         if (Cartographer.INSTANCE.requestTileType(currentPos) != Tile.Empty) {
             System.out.println("Cannot build ..");
@@ -340,6 +343,42 @@ public class Program {
 
         for (int i = 0; i < 5; i++) {
             response = postResponse(refineCopper);
+            reportId = response.getBody().getObject().get("reportId").toString();
+
+            // Loop until report is found
+            {
+                report = Unirest.get(serverUri + "report/" + reportId).asJson();
+                while (report.getBody().getObject().get("opcode").toString().equals("noreport"))
+                    report = Unirest.get(serverUri + "report/" + reportId).asJson();
+            }
+        }
+
+
+
+        currentPos = farmXResources(currentPos, Tile.Wood, 50, false);
+        currentPos = goToSafePlace(currentPos, false);
+
+        currentPos = goToTarget(currentPos, initResponse.townHallCoordinates.plus(2, 0), false);
+        if (Cartographer.INSTANCE.requestTileType(currentPos) != Tile.Empty) {
+            System.out.println("Cannot build ..");
+        }
+
+        response = postResponse(buildSawmill);
+        reportId = response.getBody().getObject().get("reportId").toString();
+
+        // Loop until report is found
+        {
+            report = Unirest.get(serverUri + "report/" + reportId).asJson();
+            while (report.getBody().getObject().get("opcode").toString().equals("noreport"))
+                report = Unirest.get(serverUri + "report/" + reportId).asJson();
+        }
+
+        parsedReport = Json.parseReport(report.getBody().toString());
+        Cartographer.INSTANCE.register((BuildReport) parsedReport);
+
+
+        for (int i = 0; i < 5; i++) {
+            response = postResponse(refineWoodPlank);
             reportId = response.getBody().getObject().get("reportId").toString();
 
             // Loop until report is found
