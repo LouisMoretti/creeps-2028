@@ -16,6 +16,7 @@ import java.util.List;
 
 public class Program {
     static final boolean DEBUG = true;
+    static int safeTicks = 20;
     static String url;
     static String port;
     static String login;
@@ -34,6 +35,8 @@ public class Program {
     static String observe;
     static String unload;
     static String noop;
+    static String buildSmeltery;
+    static String refineCopper;
 
     private static String getCmd(String citizenId, String cmd) {
         return serverUri + "command/" + login + "/" + citizenId + "/" + cmd;
@@ -78,7 +81,7 @@ public class Program {
         return closest;
     }
 
-    private static Point goToTarget(Point currentPos, Point targetPoint) throws NoReportException {
+    private static Point goToTarget(Point currentPos, Point targetPoint, boolean buildPath) throws NoReportException {
         HttpResponse<JsonNode> response;
         HttpResponse<JsonNode> report;
         Report parsedReport;
@@ -119,13 +122,13 @@ public class Program {
             Cartographer.INSTANCE.register((MoveReport) parsedReport);
 //            System.out.println(parsedReport.toString());
 
-            tryBuildRoad(currentPos);
+            if (buildPath) tryBuildRoad(currentPos);
         }
 
         return currentPos;
     }
 
-    private static Point farmXResources(Point currentPos, Tile resourceToFarm, int amount) throws NoReportException {
+    private static Point farmXResources(Point currentPos, Tile resourceToFarm, int amount, boolean buildPath) throws NoReportException {
         HttpResponse<JsonNode> response;
         HttpResponse<JsonNode> report;
         Report parsedReport;
@@ -146,7 +149,7 @@ public class Program {
 
             System.out.println("New target found: " + closestPoint.toString());
 
-            currentPos = goToTarget(currentPos, closestPoint);
+            currentPos = goToTarget(currentPos, closestPoint, buildPath);
 
             System.out.println("Target found");
 
@@ -165,15 +168,16 @@ public class Program {
             parsedReport = Json.parseReport(report.getBody().toString());
             Cartographer.INSTANCE.register((GatherReport) parsedReport);
 
-//            System.out.println("Tick: " + parsedReport.tick + ", GC in " + (initResponse.setup.gcTickRate - parsedReport.tick % initResponse.setup.gcTickRate) + " ticks");
-            if ((initResponse.setup.gcTickRate - parsedReport.tick % initResponse.setup.gcTickRate) < 10)
-                currentPos = goToSafePlace(currentPos);
+//            System.out.println("Tick: " + parsedReport.tick + ", GC in " + (initResponse.setup.gcTickRate -
+//            parsedReport.tick % initResponse.setup.gcTickRate) + " ticks");
+            if ((initResponse.setup.gcTickRate - parsedReport.tick % initResponse.setup.gcTickRate) < safeTicks)
+                currentPos = goToSafePlace(currentPos, buildPath);
 
             load += ((GatherReport) parsedReport).gathered;
             System.out.println("Gathered: " + ((GatherReport) parsedReport).gathered + "; Total: " + load);
 
             if (load >= initResponse.setup.maxLoad || load + total >= amount) {
-                currentPos = goToTarget(currentPos, initResponse.townHallCoordinates);
+                currentPos = goToTarget(currentPos, initResponse.townHallCoordinates, buildPath);
 
                 response = postResponse(unload);
                 reportId = response.getBody().getObject().get("reportId").toString();
@@ -193,11 +197,13 @@ public class Program {
         return currentPos;
     }
 
-    private static Point goToSafePlace(Point currentPos) throws NoReportException {
+    private static Point goToSafePlace(Point currentPos, boolean buildPath) throws NoReportException {
         List<Point> pointStream = Cartographer.INSTANCE.requestOfType(Tile.Road).toList();
+        if (pointStream.isEmpty())
+            pointStream = Cartographer.INSTANCE.requestOfType(Tile.TownHall).toList();
         Point closestPoint = findClosest(currentPos, pointStream);
 
-        currentPos = goToTarget(currentPos, closestPoint);
+        currentPos = goToTarget(currentPos, closestPoint, buildPath);
 
         HttpResponse<JsonNode> response;
         HttpResponse<JsonNode> report;
@@ -283,11 +289,13 @@ public class Program {
             moveUp = getCmd(initResponse.citizen1Id, "move:up");
             moveDown = getCmd(initResponse.citizen1Id, "move:down");
             buildRoad = getCmd(initResponse.citizen1Id, "build:road");
+            buildSmeltery = getCmd(initResponse.citizen1Id, "build:smeltery");
             gather = getCmd(initResponse.citizen1Id, "gather");
             spawnKhalil = getCmd(initResponse.citizen1Id, "spawn:bomber-bot");
             observe = getCmd(initResponse.citizen1Id, "observe");
             unload = getCmd(initResponse.citizen1Id, "unload");
             noop = getCmd(initResponse.citizen1Id, "noop");
+            refineCopper = getCmd(initResponse.citizen1Id, "refine:copper");
         }
 
         // ===== OBSERVE NEAR TOWN HALL =====
@@ -307,7 +315,40 @@ public class Program {
 
         Point currentPos = initResponse.householdCoordinates;
 
-        currentPos = farmXResources(currentPos, Tile.Oil, 1);
+        currentPos = goToSafePlace(currentPos, false);
+
+        currentPos = farmXResources(currentPos, Tile.Rock, 50, false);
+//        currentPos = farmXResources(currentPos, Tile.Wood, 50, false);
+        currentPos = goToTarget(currentPos, initResponse.townHallCoordinates.plus(1, 0), false);
+        if (Cartographer.INSTANCE.requestTileType(currentPos) != Tile.Empty) {
+            System.out.println("Cannot build ..");
+        }
+
+        response = postResponse(buildSmeltery);
+        reportId = response.getBody().getObject().get("reportId").toString();
+
+        // Loop until report is found
+        {
+            report = Unirest.get(serverUri + "report/" + reportId).asJson();
+            while (report.getBody().getObject().get("opcode").toString().equals("noreport"))
+                report = Unirest.get(serverUri + "report/" + reportId).asJson();
+        }
+
+        parsedReport = Json.parseReport(report.getBody().toString());
+        Cartographer.INSTANCE.register((BuildReport) parsedReport);
+
+
+        for (int i = 0; i < 5; i++) {
+            response = postResponse(refineCopper);
+            reportId = response.getBody().getObject().get("reportId").toString();
+
+            // Loop until report is found
+            {
+                report = Unirest.get(serverUri + "report/" + reportId).asJson();
+                while (report.getBody().getObject().get("opcode").toString().equals("noreport"))
+                    report = Unirest.get(serverUri + "report/" + reportId).asJson();
+            }
+        }
 
         System.out.println("Job finished !!!");
 /*
