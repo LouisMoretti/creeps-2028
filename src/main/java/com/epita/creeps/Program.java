@@ -27,7 +27,7 @@ public class Program {
         return serverUri + "command/" + login + "/" + citizenId + "/" + cmd;
     }
 
-    private static void waitMaison(String reportId, String opcode, boolean printReport) {
+    private static void waitMaison(String reportId, boolean printReport) {
         String cmd = serverUri + "report/" + reportId;
         var response = Unirest.get(cmd).asJson();
 
@@ -58,13 +58,14 @@ public class Program {
         String moveLeft = getCmd(getCitizenId(setup, 1), "move:left");
         String moveRight = getCmd(getCitizenId(setup, 1), "move:left");
         String buildRoad = getCmd(getCitizenId(setup, 1), "build:road");
+        String gather = getCmd(getCitizenId(setup, 1), "gather");
         var response = Unirest.get(serverUri + "statistics").asJson();
 
         for (int i = 0; i < 100; i++) {
             response = Unirest.post(moveLeft).body("{}").asJson();
-            waitMaison(response.getBody().getObject().get("reportId").toString(), "opcode", true);
-            response = Unirest.post(buildRoad).body("{}").asJson();
-            waitMaison(response.getBody().getObject().get("reportId").toString(), "opcode", true);
+            waitMaison(response.getBody().getObject().get("reportId").toString(), true);
+            response = Unirest.post(gather).body("{}").asJson();
+            waitMaison(response.getBody().getObject().get("reportId").toString(), true);
         }
 
 //        var response = Unirest.post(baseCmd).body("{}").asJson();
