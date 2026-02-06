@@ -175,7 +175,7 @@ public class Program {
 
         for (int i = 0; i < 50; i++) {
             // Find rocks
-            List<Point> pointStream = Cartographer.INSTANCE.requestOfType(Tile.Rock).toList();
+            List<Point> pointStream = Cartographer.INSTANCE.requestOfType(Tile.Wood).toList();
             Point closestPoint = findClosest(currentPos, pointStream);
 
             System.out.println("New target found: " + closestPoint.toString());
@@ -206,7 +206,7 @@ public class Program {
 
 //            System.out.println("Target destroyed");
 
-            if (load > maxLoad - initResponse.setup.rockGatherRate) {
+            if (load > maxLoad - initResponse.setup.woodGatherRate) {
                 currentPos = goToTarget(currentPos, initResponse.townHallCoordinates);
 
                 response = postResponse(unload);
