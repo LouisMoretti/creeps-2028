@@ -307,7 +307,7 @@ public class Program {
 
         Point currentPos = initResponse.householdCoordinates;
 
-        currentPos = farmXResources(currentPos, Tile.Food, 50);
+        currentPos = farmXResources(currentPos, Tile.Oil, 50);
 
         System.out.println("Job finished !!!");
 /*
