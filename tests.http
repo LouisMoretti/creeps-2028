@@ -1,0 +1,25 @@
+### Get statistics
+GET http://localhost:1664/statistics
+
+### Get status
+GET http://localhost:1664/status
+
+### Get report
+GET http://localhost:1664/report/148997e9b
+
+### Login with user login_l
+POST http://localhost:1664/init/login_l
+
+> {%
+client.global.set("baseId", response.body.baseId);
+client.global.set("probeId", response.body.probeId);
+client.global.set("login", response.body.login);
+%}
+
+### Post noop commande
+POST http://localhost:1664/command/{{login}}/{{probeId}}/noop
+
+###
+POST http://localhost:1664/command/dumeig_a/8d87eea10/inspect
+
+###
