@@ -44,29 +44,27 @@ public class Program {
         login = args[2];
         serverUri = "http://" + url + ":" + port + "/";
 
-
-//        System.out.println("Hello World!");
         String init = serverUri + "init/" + login;
         var setup = Unirest.post(init).body("{}").asJson();
         System.out.println(setup.getBody().toPrettyString());
 
-//        String citizen1Id = getCitizenId(setup, 1);
-//        String baseNoopCmd = serverUri + "command/" + login + "/" + citizen1Id + "/noop";
-//        String baseMoveCmd = getCmd(getCitizenId(setup, 1), "move:left");
-//        String opcode = "move:left";
-
         String moveLeft = getCmd(getCitizenId(setup, 1), "move:left");
         String moveRight = getCmd(getCitizenId(setup, 1), "move:left");
+        String moveUp = getCmd(getCitizenId(setup, 1), "move:up");
+        String moveDown = getCmd(getCitizenId(setup, 1), "move:down");
         String buildRoad = getCmd(getCitizenId(setup, 1), "build:road");
         String gather = getCmd(getCitizenId(setup, 1), "gather");
-        var response = Unirest.get(serverUri + "statistics").asJson();
+        String spawnKhalil = getCmd(getCitizenId(setup, 1), "spawn:bomber-bot");
 
-        for (int i = 0; i < 100; i++) {
-            response = Unirest.post(moveLeft).body("{}").asJson();
-            waitMaison(response.getBody().getObject().get("reportId").toString(), true);
-            response = Unirest.post(gather).body("{}").asJson();
-            waitMaison(response.getBody().getObject().get("reportId").toString(), true);
-        }
+        var response = Unirest.get(serverUri + "statistics").asJson(); // Init response with right type
+        String reportId;
+
+//        for (int i = 0; i < 100; i++) {
+//            response = Unirest.post(moveLeft).body("{}").asJson();
+//            waitMaison(response.getBody().getObject().get("reportId").toString(), true);
+//            response = Unirest.post(gather).body("{}").asJson();
+//            waitMaison(response.getBody().getObject().get("reportId").toString(), true);
+//        }
 
 //        var response = Unirest.post(baseCmd).body("{}").asJson();
 //        System.out.println(response.getBody().toPrettyString());
@@ -82,37 +80,27 @@ public class Program {
 //        reportId = response.getBody().getObject().get("reportId").toString();
 //        waitMaison(reportId, opcode, true);
 
-/*
-        opcode = "spawn:bomber-bot";
-        baseCmd = getCmd(getCitizenId(setup, 1), opcode);
-        response = Unirest.post(baseCmd).body("{}").asJson();
+        response = Unirest.post(moveDown).body("{}").asJson();
         System.out.println(response.getBody().toPrettyString());
+        waitMaison(response.getBody().getObject().get("reportId").toString(), false);
 
+        response = Unirest.post(spawnKhalil).body("{}").asJson();
+        System.out.println(response.getBody().toPrettyString());
         reportId = response.getBody().getObject().get("reportId").toString();
-        waitMaison(reportId, opcode, true);
+        waitMaison(reportId, true);
 
         response = Unirest.get(serverUri + "report/" + reportId).asJson();
         String spawnedUnitId = response.getBody().getObject().get("spawnedUnitId").toString();
 
         int x = setup.getBody().getObject().getJSONObject("townHallCoordinates").getInt("x");
-        int y = setup.getBody().getObject().getJSONObject("townHallCoordinates").getInt("y");
+        int y = setup.getBody().getObject().getJSONObject("townHallCoordinates").getInt("y") + 3;
         FireParameter fireParameter = new FireParameter(new Point(x, y));
 
-        opcode = "fire:bomber-bot";
-        baseCmd = getCmd(spawnedUnitId, opcode);
-        response = Unirest.post(baseCmd).body(fireParameter).asJson();
+        response = Unirest.post(getCmd(spawnedUnitId, "fire:bomber-bot")).body(fireParameter).asJson();
         System.out.println(response.getBody().toPrettyString());
 
         reportId = response.getBody().getObject().get("reportId").toString();
-        waitMaison(reportId, opcode, true);
-
-
-            response = Unirest.post(getCmd(getCitizenId(setup, 1), "noop")).body("{}").asJson();
-            System.out.println(response.getBody().toPrettyString());
-
-          waitMaison(reportId, opcode, true);
-
- */
+        waitMaison(reportId, true);
 
         response = Unirest.get(serverUri + "statistics").asJson();
         System.out.println(response.getBody().toPrettyString());
