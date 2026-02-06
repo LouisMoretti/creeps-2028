@@ -137,6 +137,11 @@ public class Program {
         while (total < amount) {
             // Find resources to farm
             List<Point> pointStream = Cartographer.INSTANCE.requestOfType(resourceToFarm).toList();
+            if (pointStream.isEmpty()) {
+                System.out.println("Could not find any of the wanted resource");
+                return currentPos;
+            }
+
             Point closestPoint = findClosest(currentPos, pointStream);
 
             System.out.println("New target found: " + closestPoint.toString());
@@ -302,7 +307,7 @@ public class Program {
 
         Point currentPos = initResponse.householdCoordinates;
 
-        currentPos = farmXResources(currentPos, Tile.Wood, 100);
+        currentPos = farmXResources(currentPos, Tile.Food, 50);
 
         System.out.println("Job finished !!!");
 /*
