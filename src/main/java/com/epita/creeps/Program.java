@@ -18,8 +18,21 @@ public class Program {
         return serverUri + "command/" + login + "/" + citizenId + "/" + cmd;
     }
 
+    private static void waitMaison(String reportId, String opcode, boolean printReport) {
+        String cmd = serverUri + "report/" + reportId;
+        var response = Unirest.get(cmd).asJson();
+
+        while (!response.getBody().getObject().get("opcode").toString().equals(opcode))
+            response = Unirest.get(cmd).asJson();
+
+        if (printReport)
+            System.out.println(response.getBody().toPrettyString());
+    }
+
     public static void main(String[] args) {
-        url = args[0]; port = args[1]; login = args[2];
+        url = args[0];
+        port = args[1];
+        login = args[2];
         serverUri = "http://" + url + ":" + port + "/";
 
 
@@ -30,9 +43,22 @@ public class Program {
 
 //        String citizen1Id = getCitizenId(setup, 1);
 //        String baseNoopCmd = serverUri + "command/" + login + "/" + citizen1Id + "/noop";
-        String baseMoveCmd = getCmd(getCitizenId(setup, 1), "move:left");
-        var response = Unirest.post(baseMoveCmd).body("{}").asJson();
+//        String baseMoveCmd = getCmd(getCitizenId(setup, 1), "move:left");
+        String opcode = "move:left";
+        String baseBuildCmd = getCmd(getCitizenId(setup, 1), opcode);
+        var response = Unirest.post(baseBuildCmd).body("{}").asJson();
         System.out.println(response.getBody().toPrettyString());
+
+        String reportId = response.getBody().getObject().get("reportId").toString();
+        waitMaison(reportId, opcode, true);
+
+        opcode = "build:road";
+        baseBuildCmd = getCmd(getCitizenId(setup, 1), opcode);
+        response = Unirest.post(baseBuildCmd).body("{}").asJson();
+        System.out.println(response.getBody().toPrettyString());
+
+        reportId = response.getBody().getObject().get("reportId").toString();
+        waitMaison(reportId, opcode, true);
 
         response = Unirest.get(serverUri + "statistics").asJson();
         System.out.println(response.getBody().toPrettyString());
