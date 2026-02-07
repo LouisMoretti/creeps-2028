@@ -356,8 +356,7 @@ public class Program {
 
 
 
-        currentPos = farmXResources(currentPos, Tile.Wood, 40, false);
-
+        currentPos = farmXResources(currentPos, Tile.Wood, 50, false);
 
         response = postResponse(noop);
         reportId = response.getBody().getObject().get("reportId").toString();
@@ -404,6 +403,18 @@ public class Program {
         }
 
 //        currentPos = farmXResources(currentPos, Tile.Oil, 1, false);
+//
+//        for (int i = 0; i < 1000; i++) {
+//            response = postResponse(noop);
+//            reportId = response.getBody().getObject().get("reportId").toString();
+//
+//            // Loop until report is found
+//            {
+//                report = Unirest.get(serverUri + "report/" + reportId).asJson();
+//                while (report.getBody().getObject().get("opcode").toString().equals("noreport"))
+//                    report = Unirest.get(serverUri + "report/" + reportId).asJson();
+//            }
+//        }
 
         System.out.println("Job finished !!!");
 /*
