@@ -432,7 +432,26 @@ public class Program {
                     report = Unirest.get(serverUri + "report/" + reportId).asJson();
             }
 
+            if (report.getBody().getObject().has("fetchedMessages")) {
+                System.out.println("Recived message:");
+                break;
+            }
+
 //            System.out.println(report.getBody().getObject().get());
+        }
+
+        for (int i = 0; i < 1000; i++) {
+            response = postResponse(sendMessage, messageParameter);
+            reportId = response.getBody().getObject().get("reportId").toString();
+
+            // Loop until report is found
+            {
+                report = Unirest.get(serverUri + "report/" + reportId).asJson();
+                while (report.getBody().getObject().get("opcode").toString().equals("noreport"))
+                    report = Unirest.get(serverUri + "report/" + reportId).asJson();
+            }
+
+            System.out.println("Sent messages: " + i);
         }
 
         System.out.println("Job finished !!!");
