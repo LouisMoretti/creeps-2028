@@ -357,7 +357,20 @@ public class Program {
 
 
         currentPos = farmXResources(currentPos, Tile.Wood, 40, false);
-        currentPos = goToSafePlace(currentPos, false);
+
+
+        response = postResponse(noop);
+        reportId = response.getBody().getObject().get("reportId").toString();
+        // Loop until report is found
+        {
+            report = Unirest.get(serverUri + "report/" + reportId).asJson();
+            while (report.getBody().getObject().get("opcode").toString().equals("noreport"))
+                report = Unirest.get(serverUri + "report/" + reportId).asJson();
+        }
+
+        parsedReport = Json.parseReport(report.getBody().toString());
+        if ((initResponse.setup.gcTickRate - parsedReport.tick % initResponse.setup.gcTickRate) < safeTicks)
+            currentPos = goToSafePlace(currentPos, false);
 
         currentPos = goToTarget(currentPos, initResponse.townHallCoordinates.plus(1, 0), false);
         if (Cartographer.INSTANCE.requestTileType(currentPos) != Tile.Empty) {
