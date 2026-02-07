@@ -356,7 +356,7 @@ public class Program {
 
 
 
-        currentPos = farmXResources(currentPos, Tile.Wood, 20, false);
+        currentPos = farmXResources(currentPos, Tile.Wood, 40, false);
 //        currentPos = goToSafePlace(currentPos, false);
 
         currentPos = goToTarget(currentPos, initResponse.townHallCoordinates.plus(1, 0), false);
