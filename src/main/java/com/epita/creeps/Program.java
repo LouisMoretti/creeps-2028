@@ -356,7 +356,7 @@ public class Program {
 
 
 
-        currentPos = farmXResources(currentPos, Tile.Wood, 50, false);
+        currentPos = farmXResources(currentPos, Tile.Wood, 20, false);
 //        currentPos = goToSafePlace(currentPos, false);
 
         currentPos = goToTarget(currentPos, initResponse.townHallCoordinates.plus(1, 0), false);
@@ -378,7 +378,7 @@ public class Program {
         Cartographer.INSTANCE.register((BuildReport) parsedReport);
 
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 1; i++) {
             response = postResponse(refineWoodPlank);
             reportId = response.getBody().getObject().get("reportId").toString();
 
