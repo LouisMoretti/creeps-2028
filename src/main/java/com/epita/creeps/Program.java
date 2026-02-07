@@ -41,6 +41,7 @@ public class Program {
     static String buildSawmill;
     static String refineWoodPlank;
     static String sendMessage;
+    static String fetchMessage;
 
     private static String getCmd(String citizenId, String cmd) {
         return serverUri + "command/" + login + "/" + citizenId + "/" + cmd;
@@ -303,6 +304,7 @@ public class Program {
             buildSawmill = getCmd(initResponse.citizen1Id, "build:sawmill");
             refineWoodPlank = getCmd(initResponse.citizen1Id, "build:wood-plank");
             sendMessage = getCmd(initResponse.citizen1Id, "message:send");
+            fetchMessage = getCmd(initResponse.citizen1Id, "message:fetch");
         }
 
         // ===== OBSERVE NEAR TOWN HALL =====
@@ -407,7 +409,7 @@ public class Program {
 
 //        currentPos = farmXResources(currentPos, Tile.Oil, 1, false);
 
-        MessageParameter messageParameter = new MessageParameter("Hector", "NTM");
+        MessageParameter messageParameter = new MessageParameter("thomas.battini-85c4d8b6afdf49c7baee7bc6d23587b0", "NTM");
 
         response = postResponse(sendMessage, messageParameter);
         reportId = response.getBody().getObject().get("reportId").toString();
@@ -419,17 +421,19 @@ public class Program {
                 report = Unirest.get(serverUri + "report/" + reportId).asJson();
         }
 
-//        for (int i = 0; i < 1000; i++) {
-//            response = postResponse(noop);
-//            reportId = response.getBody().getObject().get("reportId").toString();
-//
-//            // Loop until report is found
-//            {
-//                report = Unirest.get(serverUri + "report/" + reportId).asJson();
-//                while (report.getBody().getObject().get("opcode").toString().equals("noreport"))
-//                    report = Unirest.get(serverUri + "report/" + reportId).asJson();
-//            }
-//        }
+        for (int i = 0; i < 100; i++) {
+            response = postResponse(fetchMessage);
+            reportId = response.getBody().getObject().get("reportId").toString();
+
+            // Loop until report is found
+            {
+                report = Unirest.get(serverUri + "report/" + reportId).asJson();
+                while (report.getBody().getObject().get("opcode").toString().equals("noreport"))
+                    report = Unirest.get(serverUri + "report/" + reportId).asJson();
+            }
+
+//            System.out.println(report.getBody().getObject().get());
+        }
 
         System.out.println("Job finished !!!");
 /*
