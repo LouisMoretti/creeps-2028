@@ -5,6 +5,7 @@ import com.epita.creeps.given.extra.Cartographer;
 import com.epita.creeps.given.json.Json;
 import com.epita.creeps.given.vo.Tile;
 import com.epita.creeps.given.vo.geometry.Point;
+import com.epita.creeps.given.vo.parameter.MessageParameter;
 import com.epita.creeps.given.vo.report.*;
 import com.epita.creeps.given.vo.response.InitResponse;
 import kong.unirest.core.HttpResponse;
@@ -39,6 +40,7 @@ public class Program {
     static String refineCopper;
     static String buildSawmill;
     static String refineWoodPlank;
+    static String sendMessage;
 
     private static String getCmd(String citizenId, String cmd) {
         return serverUri + "command/" + login + "/" + citizenId + "/" + cmd;
@@ -59,7 +61,7 @@ public class Program {
         return Unirest.post(cmd).body("{}").asJson();
     }
 
-    private static HttpResponse<JsonNode> postResponse(String cmd, RequestBodyEntity body) {
+    private static HttpResponse<JsonNode> postResponse(String cmd, Object body) {
         return Unirest.post(cmd).body(body).asJson();
     }
 
@@ -300,6 +302,7 @@ public class Program {
             refineCopper = getCmd(initResponse.citizen1Id, "refine:copper");
             buildSawmill = getCmd(initResponse.citizen1Id, "build:sawmill");
             refineWoodPlank = getCmd(initResponse.citizen1Id, "build:wood-plank");
+            sendMessage = getCmd(initResponse.citizen1Id, "message:send");
         }
 
         // ===== OBSERVE NEAR TOWN HALL =====
@@ -356,54 +359,66 @@ public class Program {
 
 
 
-        currentPos = farmXResources(currentPos, Tile.Wood, 50, false);
-
-        response = postResponse(noop);
-        reportId = response.getBody().getObject().get("reportId").toString();
-        // Loop until report is found
-        {
-            report = Unirest.get(serverUri + "report/" + reportId).asJson();
-            while (report.getBody().getObject().get("opcode").toString().equals("noreport"))
-                report = Unirest.get(serverUri + "report/" + reportId).asJson();
-        }
-
-        parsedReport = Json.parseReport(report.getBody().toString());
-        if ((initResponse.setup.gcTickRate - parsedReport.tick % initResponse.setup.gcTickRate) < safeTicks)
-            currentPos = goToSafePlace(currentPos, false);
-
-        currentPos = goToTarget(currentPos, initResponse.townHallCoordinates.plus(1, 0), false);
-        if (Cartographer.INSTANCE.requestTileType(currentPos) != Tile.Empty) {
-            System.out.println("Cannot build ..");
-        }
-
-        response = postResponse(buildSawmill);
-        reportId = response.getBody().getObject().get("reportId").toString();
-
-        // Loop until report is found
-        {
-            report = Unirest.get(serverUri + "report/" + reportId).asJson();
-            while (report.getBody().getObject().get("opcode").toString().equals("noreport"))
-                report = Unirest.get(serverUri + "report/" + reportId).asJson();
-        }
-
-        parsedReport = Json.parseReport(report.getBody().toString());
-        Cartographer.INSTANCE.register((BuildReport) parsedReport);
-
-
-        for (int i = 0; i < 1; i++) {
-            response = postResponse(refineWoodPlank);
-            reportId = response.getBody().getObject().get("reportId").toString();
-
-            // Loop until report is found
-            {
-                report = Unirest.get(serverUri + "report/" + reportId).asJson();
-                while (report.getBody().getObject().get("opcode").toString().equals("noreport"))
-                    report = Unirest.get(serverUri + "report/" + reportId).asJson();
-            }
-        }
+//        currentPos = farmXResources(currentPos, Tile.Wood, 50, false);
+//
+//        response = postResponse(noop);
+//        reportId = response.getBody().getObject().get("reportId").toString();
+//        // Loop until report is found
+//        {
+//            report = Unirest.get(serverUri + "report/" + reportId).asJson();
+//            while (report.getBody().getObject().get("opcode").toString().equals("noreport"))
+//                report = Unirest.get(serverUri + "report/" + reportId).asJson();
+//        }
+//
+//        parsedReport = Json.parseReport(report.getBody().toString());
+//        if ((initResponse.setup.gcTickRate - parsedReport.tick % initResponse.setup.gcTickRate) < safeTicks)
+//            currentPos = goToSafePlace(currentPos, false);
+//
+//        currentPos = goToTarget(currentPos, initResponse.townHallCoordinates.plus(1, 0), false);
+//        if (Cartographer.INSTANCE.requestTileType(currentPos) != Tile.Empty) {
+//            System.out.println("Cannot build ..");
+//        }
+//
+//        response = postResponse(buildSawmill);
+//        reportId = response.getBody().getObject().get("reportId").toString();
+//
+//        // Loop until report is found
+//        {
+//            report = Unirest.get(serverUri + "report/" + reportId).asJson();
+//            while (report.getBody().getObject().get("opcode").toString().equals("noreport"))
+//                report = Unirest.get(serverUri + "report/" + reportId).asJson();
+//        }
+//
+//        parsedReport = Json.parseReport(report.getBody().toString());
+//        Cartographer.INSTANCE.register((BuildReport) parsedReport);
+//
+//
+//        for (int i = 0; i < 1; i++) {
+//            response = postResponse(refineWoodPlank);
+//            reportId = response.getBody().getObject().get("reportId").toString();
+//
+//            // Loop until report is found
+//            {
+//                report = Unirest.get(serverUri + "report/" + reportId).asJson();
+//                while (report.getBody().getObject().get("opcode").toString().equals("noreport"))
+//                    report = Unirest.get(serverUri + "report/" + reportId).asJson();
+//            }
+//        }
 
 //        currentPos = farmXResources(currentPos, Tile.Oil, 1, false);
-//
+
+        MessageParameter messageParameter = new MessageParameter("Hector", "NTM");
+
+        response = postResponse(sendMessage, messageParameter);
+        reportId = response.getBody().getObject().get("reportId").toString();
+
+        // Loop until report is found
+        {
+            report = Unirest.get(serverUri + "report/" + reportId).asJson();
+            while (report.getBody().getObject().get("opcode").toString().equals("noreport"))
+                report = Unirest.get(serverUri + "report/" + reportId).asJson();
+        }
+
 //        for (int i = 0; i < 1000; i++) {
 //            response = postResponse(noop);
 //            reportId = response.getBody().getObject().get("reportId").toString();
