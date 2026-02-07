@@ -356,39 +356,41 @@ public class Program {
 
 
 
-        currentPos = farmXResources(currentPos, Tile.Wood, 50, false);
-        currentPos = goToSafePlace(currentPos, false);
+//        currentPos = farmXResources(currentPos, Tile.Wood, 50, false);
+//        currentPos = goToSafePlace(currentPos, false);
+//
+//        currentPos = goToTarget(currentPos, initResponse.townHallCoordinates.plus(2, 0), false);
+//        if (Cartographer.INSTANCE.requestTileType(currentPos) != Tile.Empty) {
+//            System.out.println("Cannot build ..");
+//        }
+//
+//        response = postResponse(buildSawmill);
+//        reportId = response.getBody().getObject().get("reportId").toString();
+//
+//        // Loop until report is found
+//        {
+//            report = Unirest.get(serverUri + "report/" + reportId).asJson();
+//            while (report.getBody().getObject().get("opcode").toString().equals("noreport"))
+//                report = Unirest.get(serverUri + "report/" + reportId).asJson();
+//        }
+//
+//        parsedReport = Json.parseReport(report.getBody().toString());
+//        Cartographer.INSTANCE.register((BuildReport) parsedReport);
+//
+//
+//        for (int i = 0; i < 5; i++) {
+//            response = postResponse(refineWoodPlank);
+//            reportId = response.getBody().getObject().get("reportId").toString();
+//
+//            // Loop until report is found
+//            {
+//                report = Unirest.get(serverUri + "report/" + reportId).asJson();
+//                while (report.getBody().getObject().get("opcode").toString().equals("noreport"))
+//                    report = Unirest.get(serverUri + "report/" + reportId).asJson();
+//            }
+//        }
 
-        currentPos = goToTarget(currentPos, initResponse.townHallCoordinates.plus(2, 0), false);
-        if (Cartographer.INSTANCE.requestTileType(currentPos) != Tile.Empty) {
-            System.out.println("Cannot build ..");
-        }
-
-        response = postResponse(buildSawmill);
-        reportId = response.getBody().getObject().get("reportId").toString();
-
-        // Loop until report is found
-        {
-            report = Unirest.get(serverUri + "report/" + reportId).asJson();
-            while (report.getBody().getObject().get("opcode").toString().equals("noreport"))
-                report = Unirest.get(serverUri + "report/" + reportId).asJson();
-        }
-
-        parsedReport = Json.parseReport(report.getBody().toString());
-        Cartographer.INSTANCE.register((BuildReport) parsedReport);
-
-
-        for (int i = 0; i < 5; i++) {
-            response = postResponse(refineWoodPlank);
-            reportId = response.getBody().getObject().get("reportId").toString();
-
-            // Loop until report is found
-            {
-                report = Unirest.get(serverUri + "report/" + reportId).asJson();
-                while (report.getBody().getObject().get("opcode").toString().equals("noreport"))
-                    report = Unirest.get(serverUri + "report/" + reportId).asJson();
-            }
-        }
+        currentPos = farmXResources(currentPos, Tile.Oil, 1, false);
 
         System.out.println("Job finished !!!");
 /*
