@@ -409,7 +409,7 @@ public class Program {
 
 //        currentPos = farmXResources(currentPos, Tile.Oil, 1, false);
 
-        MessageParameter messageParameter = new MessageParameter("thomas.battini-85c4d8b6afdf49c7baee7bc6d23587b0", "NTM");
+        MessageParameter messageParameter = new MessageParameter("thomas.battini-1a24ca09cb21446490d240d1d6217f42", "NTM");
 
         response = postResponse(sendMessage, messageParameter);
         reportId = response.getBody().getObject().get("reportId").toString();
